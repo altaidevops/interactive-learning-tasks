@@ -11,6 +11,6 @@ output "PIP" {
   value = aws_instance.web.public_ip
 }
 
-output "REGION" {
-  value = aws_instance.web.availability_zone
+output "aws_instance_region" {
+  value = "us-east-1"
 }
