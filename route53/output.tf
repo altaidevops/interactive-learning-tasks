@@ -3,7 +3,7 @@ output "zone-id" {
 }
 
 output "zone-name" {
-  value = aws_route53_record.blog.zone_id
+  value = aws_route53_record.blog.name
 }
 
 output "zone-records" {
