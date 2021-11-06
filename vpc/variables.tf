@@ -8,5 +8,5 @@ variable "public_cidr_block2" {}
 variable "public_cidr_block3" {}
 
 variable "tags" {
-  type = "map"
+  type = map(string)
 }
