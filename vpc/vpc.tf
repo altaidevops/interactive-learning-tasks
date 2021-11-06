@@ -1,37 +1,18 @@
-resource "aws_vpc" "main {
-  cidr_block = "10.0.0.0/16"
-  instance_tenancy = "default"
-  description = "Main VPC"
-  tags = local.common_tags
-}
+# module "vpc" {
+#   source = "./modules/vpc"
 
-resource "aws_subnet" "private1" {
-  cidr_block = "10.0.1.0/16"
-  vpc_id = aws_vpc.main.id
-}
+#   environment               = var.environment
+#   vpc_cidr_block            = var.vpc_cidr_block
+#   availability_zones        = [ var.az1, var.az2, var.az3 ]
+#   public_subnet_cidr_blocks = [ var.public_cidr1, var.public_cidr2, var.public_cidr3 ]
+#   private_subnet_cidr_blocks = [ var.private_cidr1, var.private_cidr2, var.private_cidr3 ]
+# }
 
-resource "aws_subnet" "private2" {
-  cidr_block = "10.0.2.0/16"
-  vpc_id = aws_vpc.main.id
-}
+# output "vpc_id" {
+#   value = module.vpc.id
+# }
 
-resource "aws_vpc" "private3" {
-  cidr_block = "10.0.3.0/16"
-  vpc_id = aws_vpc.main.id
+resource "aws_vpc" "main" {
+  cidr_block = "${var.cidr_block}"
+  tags       = "${var.tags}"
 }
-
-resource "aws_vpc" "public1" {
-  cidr_block = "10.0.10.0/16"
-  vpc_id = aws_vpc.main.id
-}
-
-resource "aws_vpc" "public2" {
-  cidr_block = "10.0.20.0/16"
-  vpc_id = aws_vpc.main.id
-}
-
-resource "aws_vpc" "public3" {
-  cidr_block = "10.0.30.0/16"
-  vpc_id = aws_vpc.main.id
-}
-

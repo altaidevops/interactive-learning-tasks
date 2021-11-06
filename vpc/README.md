@@ -1,1 +1,1 @@
-# terraform-august-class
+# Terraform VPC Project
