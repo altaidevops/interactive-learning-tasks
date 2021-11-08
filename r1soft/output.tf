@@ -9,5 +9,5 @@ output "Host_Address" {
 }
 
 output "AZ" {
-  value = data.aws_availability_zones.all.names
+  value = data.aws_availability_zones.all.id
 }
