@@ -6,19 +6,20 @@ resource "aws_instance" "nagios" {
 
   provisioner "remote-exec" {
     inline = [
-    "sudo yum install wget -y",
-    "cd /tmp",
-    "sudo wget https://assets.nagios.com/downloads/nagiosxi/xi-latest.tar.gz tar xzf xi-latest.tar.gz",
-    "cd nagiosxi",
-    "sudo ./fullinstall",
-   ]
+      "sudo yum install wget -y",
+      "cd /tmp",
+      "sudo wget https://assets.nagios.com/downloads/nagiosxi/xi-latest.tar.gz",
+      "sudo tar -zxvf xi-latest.tar.gz",
+      "cd nagiosxi",
+      "./fullinstall",
+    ]
   }
 
   connection {
     type        = "ssh"
     user        = "centos"
     private_key = file("~/.ssh/id_rsa")
-    host        = aws_instance.jenkins.public_ip
+    host        = aws_instance.nagios.public_ip
   }
 
   tags = var.tags
