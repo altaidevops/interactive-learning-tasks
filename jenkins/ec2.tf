@@ -6,16 +6,18 @@ resource "aws_instance" "jenkins" {
 
   provisioner "remote-exec" {
     inline = [
-      "wget http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo",
-      "sudo cp jenkins.repo /etc/yum.repos.d/",
-      "sudo rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key'",
-      "sudo yum upgrade",
-      "sudo yum install epel-release java-11-openjdk-devel",
-      "sudo yum install jenkins",
+      "sudo yum install wget -y",
+      "sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo  --no-check-certificate",
+      "sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key",
+      "sudo yum upgrade -y",
+      "sudo yum install epel-release java-11-openjdk-devel -y",
+      "sudo yum install jenkins -y",
       "sudo systemctl daemon-reload",
       "sudo systemctl start jenkins",
+      "sudo systemctl status jenkins",
       "sudo systemctl enable jenkins",
-      "sudo cat /var/lib/jenkins/secrets/initialAdminPassword",
+      # "sudo more /var/log/jenkins.log",
+      # "sudo cat /var/lib/jenkins/secrets/initialAdminPassword",
     ]
   }
 

@@ -1,17 +1,17 @@
 resource "null_resource" "myscript" {
-  depends_on = [aws_instance.jenkins, aws_security_group.web_traffic]
+  depends_on = [aws_instance.nagios, aws_security_group.web_traffic]
   triggers = {
     always_run = timestamp()
   }
   provisioner "remote-exec" {
     inline = [
-      "echo Jenkins installation",
+      "echo Nagios Server installation",
     ]
   }
   connection {
     type        = "ssh"
-    user        = "centos"
+    user        = "ubuntu"
     private_key = file("~/.ssh/id_rsa")
-    host        = aws_instance.jenkins.public_ip
+    host        = aws_instance.nagios.public_ip
   }
 }

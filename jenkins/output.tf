@@ -11,3 +11,15 @@ output "Host_Address" {
 output "AZ" {
   value = data.aws_availability_zones.all.id
 }
+
+output "Jenkins_URL" {
+  value = aws_route53_record.jenkins.name
+}
+
+output "Jenkins_User" {
+  value = "admin"
+}
+
+output "Jenkins_Passwd" {
+  value = "redhat"
+}
