@@ -65,10 +65,10 @@ module "db" {
   engine_version       = "8.0.20"
   family               = "mysql8.0" # DB parameter group
   major_engine_version = "8.0"      # DB option group
-  instance_class       = "db.t3.large"
+  instance_class       = "db.t2.micro"
 
-  allocated_storage     = 20
-  max_allocated_storage = 100
+  allocated_storage     = 50
+  max_allocated_storage = 500
   storage_encrypted     = false
 
   name     = "completeMysql"
@@ -153,13 +153,13 @@ module "db_default" {
   tags = local.tags
 }
 
-module "db_disabled" {
-  source = "../../"
+# module "db_disabled" {
+#   source = "../../"
 
-  identifier = "${local.name}-disabled"
+#   identifier = "${local.name}-disabled"
 
-  create_db_instance        = false
-  create_db_subnet_group    = false
-  create_db_parameter_group = false
-  create_db_option_group    = false
-}
+#   create_db_instance        = false
+#   create_db_subnet_group    = false
+#   create_db_parameter_group = false
+#   create_db_option_group    = false
+# }
