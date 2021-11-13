@@ -14,7 +14,7 @@ locals {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 2"
+  # version = "~> 2"
 
   name = local.name
   cidr = "10.99.0.0/18"
@@ -31,7 +31,7 @@ module "vpc" {
 
 module "security_group" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 4"
+  # version = "~> 4"
 
   name        = local.name
   description = "Complete MySQL example security group"
