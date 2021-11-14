@@ -1,165 +1,55 @@
-locals {
-  name   = "complete-mysql"
-  region = "eu-west-1"
-  tags = {
-    Owner       = "user"
-    Environment = "dev"
-    Name = "mysql"
-  }
-}
-
-################################################################################
-# Supporting Resources
-################################################################################
-
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  # version = "~> 2"
-
-  name = local.name
-  cidr = "10.99.0.0/18"
-
-  azs              = ["${local.region}a", "${local.region}b", "${local.region}c"]
-  public_subnets   = ["10.99.0.0/24", "10.99.1.0/24", "10.99.2.0/24"]
-  private_subnets  = ["10.99.3.0/24", "10.99.4.0/24", "10.99.5.0/24"]
-  database_subnets = ["10.99.7.0/24", "10.99.8.0/24", "10.99.9.0/24"]
-
-  create_database_subnet_group = true
-
-  tags = local.tags
-}
-
-module "security_group" {
-  source  = "terraform-aws-modules/security-group/aws"
-  # version = "~> 4"
-
-  name        = local.name
-  description = "Complete MySQL example security group"
-  vpc_id      = module.vpc.vpc_id
-
-  # ingress
-  ingress_with_cidr_blocks = [
-    {
-      from_port   = 3306
-      to_port     = 3306
-      protocol    = "tcp"
-      description = "MySQL access from within VPC"
-      cidr_blocks = module.vpc.vpc_cidr_block
-    },
-  ]
-
-  tags = local.tags
-}
-
-################################################################################
-# RDS Module
-################################################################################
-
-module "db" {
-  source = "../../"
-
-  identifier = local.name
-
-  # All available versions: http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt
-  engine               = "mysql"
-  engine_version       = "8.0.20"
-  family               = "mysql8.0" # DB parameter group
-  major_engine_version = "8.0"      # DB option group
-  instance_class       = "db.t2.micro"
-
-  allocated_storage     = 50
+resource "aws_db_instance" "my-test-sql" {
+  instance_class          = "db.t2.micro"
+  engine                  = "mysql"
+  engine_version          = "5.7"
+  multi_az                = false
+  storage_type            = "gp2"
+  allocated_storage       = 50
   max_allocated_storage = 500
   storage_encrypted     = false
-
-  name     = "completeMysql"
-  username = "complete_mysql"
-  password = "YourPwdShouldBeLongAndSecure!"
-  port     = 3306
-
-  multi_az               = true
-  subnet_ids             = module.vpc.database_subnets
-  vpc_security_group_ids = [module.security_group.security_group_id]
-
-  maintenance_window              = "Mon:00:00-Mon:03:00"
-  backup_window                   = "03:00-06:00"
-  enabled_cloudwatch_logs_exports = ["general"]
-
-  backup_retention_period = 0
-  skip_final_snapshot     = true
-  deletion_protection     = false
-
-  performance_insights_enabled          = true
-  performance_insights_retention_period = 7
-  create_monitoring_role                = true
-  monitoring_interval                   = 60
-
-  parameters = [
-    {
-      name  = "character_set_client"
-      value = "utf8mb4"
-    },
-    {
-      name  = "character_set_server"
-      value = "utf8mb4"
-    }
-  ]
-
-  tags = local.tags
-  db_instance_tags = {
-    "Sensitive" = "high"
-  }
-  db_option_group_tags = {
-    "Sensitive" = "low"
-  }
-  db_parameter_group_tags = {
-    "Sensitive" = "low"
-  }
-  db_subnet_group_tags = {
-    "Sensitive" = "high"
-  }
+  name                    = "mytestrds"
+  username                = "admin"
+  password                = "admin123"
+  apply_immediately       = "true"
+  backup_retention_period = 10
+  backup_window           = "09:46-10:16"
+  db_subnet_group_name    = aws_db_subnet_group.my-rds-db-subnet.name
+  vpc_security_group_ids  = [aws_security_group.my-rds-sg.id]
+  allow_major_version_upgrade = true
+  auto_minor_version_upgrade  = true
 }
 
-module "db_default" {
-  source = "../../"
-
-  identifier = "${local.name}-default"
-
-  create_db_option_group    = false
-  create_db_parameter_group = false
-
-  # All available versions: http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt
-  engine               = "mysql"
-  engine_version       = "8.0.20"
-  family               = "mysql8.0" # DB parameter group
-  major_engine_version = "8.0"      # DB option group
-  instance_class       = "db.t3.large"
-
-  allocated_storage = 20
-
-  name                   = "completeMysql"
-  username               = "complete_mysql"
-  create_random_password = true
-  random_password_length = 12
-  port                   = 3306
-
-  subnet_ids             = module.vpc.database_subnets
-  vpc_security_group_ids = [module.security_group.security_group_id]
-
-  maintenance_window = "Mon:00:00-Mon:03:00"
-  backup_window      = "03:00-06:00"
-
-  backup_retention_period = 0
-
-  tags = local.tags
+resource "aws_db_subnet_group" "my-rds-db-subnet" {
+  name       = "my-rds-db-subnet"
+  subnet_ids = ["10.0.1.0/24", "10.0.2.0/24"]
 }
 
-# module "db_disabled" {
-#   source = "../../"
+resource "aws_security_group" "mysql" {
+  name   = "mysql"
+  vpc_id = module.vpc.vpc_id
+}
 
-#   identifier = "${local.name}-disabled"
+resource "aws_security_group_rule" "my-rds-sg-rule" {
+  from_port         = 3306
+  protocol          = "tcp"
+  security_group_id = aws_security_group.mysql.id
+  to_port           = 3306
+  type              = "ingress"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
 
-#   create_db_instance        = false
-#   create_db_subnet_group    = false
-#   create_db_parameter_group = false
-#   create_db_option_group    = false
-# }
+resource "aws_security_group_rule" "outbound_rule" {
+  from_port         = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.mysql.id
+  to_port           = 0
+  type              = "egress"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+data "aws_kms_secret" "rds" {
+  secret {
+    name = "db-password"
+    payload = "AQICAHibS2rwth4UleeAxsSEfxgwqkPtD0jzkRM/Ez91Y7cbvwEHP2YRcuplZp/H7GqmIuXVAAAAZjBkBgkqhkiG9w0BBwagVzBVAgEAMFAGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMps5PwT/x3nCnBMfTAgEQgCNd+Y6q9KBZbIX8JZlqP7EDErQLuaBLh6mKaYBz+5blxWstwQ=="
+  }
+}
