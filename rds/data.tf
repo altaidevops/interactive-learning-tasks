@@ -1,15 +1,7 @@
-data "aws_ami" "amazon" {
-  most_recent = true
+data "aws_availability_zones" "available" {
+  state = "available"
+}
 
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-2.0.20211005.0-x86_64-gp2"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["137112412989"] # Canonical
+output "AZ" {
+  value = data.aws_availability_zones.available.names
 }
